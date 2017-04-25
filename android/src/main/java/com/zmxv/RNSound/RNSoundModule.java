@@ -36,6 +36,7 @@ public class RNSoundModule extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void prepare(final String fileName, final Integer key, final Callback callback) {
+    Log.i("RNSoundModule", "Prepare Called");
     MediaPlayer player = createMediaPlayer(fileName);
     if (player == null) {
       WritableMap e = Arguments.createMap();
@@ -44,17 +45,7 @@ public class RNSoundModule extends ReactContextBaseJavaModule {
       callback.invoke(e);
       return;
     }
-    try {
-      player.prepare();
-    } catch (Exception exception) {
-              Log.e("RNSoundModule", "Exception", exception);
 
-       WritableMap e = Arguments.createMap();
-        e.putInt("code", -1);
-        e.putString("message", exception.getMessage());
-        callback.invoke(e);
-        return;
-    }
     this.playerPool.put(key, player);
     WritableMap props = Arguments.createMap();
     props.putDouble("duration", player.getDuration() * .001);
@@ -62,6 +53,7 @@ public class RNSoundModule extends ReactContextBaseJavaModule {
   }
 
   protected MediaPlayer createMediaPlayer(final String fileName) {
+    Log.i("RNSoundModule", "Loading file from filename: " + fileName);
     int res = this.context.getResources().getIdentifier(fileName, "raw", this.context.getPackageName());
     if (res != 0) {
       return MediaPlayer.create(this.context, res);
@@ -76,6 +68,19 @@ public class RNSoundModule extends ReactContextBaseJavaModule {
         Log.e("RNSoundModule", "Exception", e);
         return null;
       }
+
+      try {
+        mediaPlayer.prepare();
+      } catch (Exception exception) {
+         Log.e("RNSoundModule", "Exception", exception);
+
+         WritableMap e = Arguments.createMap();
+          e.putInt("code", -1);
+          e.putString("message", exception.getMessage());
+          //callback.invoke(e);
+          return null;
+      }
+
       return mediaPlayer;
     }
 

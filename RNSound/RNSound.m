@@ -146,16 +146,19 @@ RCT_EXPORT_METHOD(prepare:(NSString*)fileName withKey:(nonnull NSNumber*)key
   NSError* error;
   NSURL* fileNameUrl;
   AVPlayer* player;
+  AVPlayerItem* playerItem;
 
   if ([fileName hasPrefix:@"http"]) {
     fileNameUrl = [NSURL URLWithString:[fileName stringByRemovingPercentEncoding]];
+    playerItem = [AVPlayerItem playerItemWithURL:fileNameUrl];
   }
   else {
     fileNameUrl = [NSURL fileURLWithPath:[fileName stringByRemovingPercentEncoding]];
+    AVAsset *asset = [AVURLAsset URLAssetWithURL:fileNameUrl options:nil];
+    playerItem = [AVPlayerItem playerItemWithAsset:asset];
   }
 
-  if (fileNameUrl) {
-    AVPlayerItem* playerItem = [AVPlayerItem playerItemWithURL:fileNameUrl];
+  if (playerItem) {
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(audioPlayerDidFinishPlaying:) name:AVPlayerItemDidPlayToEndTimeNotification object:playerItem];
     player = [[AVPlayer alloc] initWithPlayerItem:playerItem];
   }

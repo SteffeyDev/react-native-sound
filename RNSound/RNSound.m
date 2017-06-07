@@ -39,7 +39,6 @@
                 RCTResponseSenderBlock callback = self->loadCallback;
                 if (callback) {
                   callback(@[[NSNull null], @{@"duration": @(CMTimeGetSeconds(player.currentItem.asset.duration))}]);
-                  self->loadCallback = nil;
                 }
 
 

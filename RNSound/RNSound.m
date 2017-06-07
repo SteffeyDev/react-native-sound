@@ -37,7 +37,11 @@
             } else if (player.status == AVPlayerStatusReadyToPlay) {
                 NSLog(@"AVPlayerStatusReadyToPlay");
                 RCTResponseSenderBlock callback = self->loadCallback;
-                callback(@[[NSNull null], @{@"duration": @(CMTimeGetSeconds(player.currentItem.asset.duration))}]);
+                if (callback) {
+                  callback(@[[NSNull null], @{@"duration": @(CMTimeGetSeconds(player.currentItem.asset.duration))}]);
+                  self->loadCallback = nil;
+                }
+
 
             } else if (player.status == AVPlayerItemStatusUnknown) {
                 NSLog(@"AVPlayer Unknown");
@@ -132,9 +136,10 @@ RCT_EXPORT_METHOD(prepare:(NSString*)fileName withKey:(nonnull NSNumber*)key
   }
 
   if (player) {
-    //player.delegate = self;
-    //player.enableRate = YES;
-    //[player prepareToPlay];
+    if (self->player) {
+      [self->player removeObserver:self forKeyPath:@"status" context:nil];
+      [self->player removeObserver:self forKeyPath:@"loadedTimeRanges" context:nil];
+    }
     [player addObserver:self forKeyPath:@"status" options:0 context:nil];
     [player addObserver:self forKeyPath:@"loadedTimeRanges" options:NSKeyValueObservingOptionNew context:nil];
     self->player = player;
@@ -174,6 +179,7 @@ RCT_EXPORT_METHOD(release:(nonnull NSNumber*)key) {
     [player removeObserver:self forKeyPath:@"status" context:nil];
     [player removeObserver:self forKeyPath:@"loadedTimeRanges" context:nil];
     self->player = nil;
+    self->loadCallback = nil;
     self->endCallback = nil;
   }
 }
